@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Техасский холдем — магический круг</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Unbounded:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07060b;
+    --paper: #f6f3ff;
+    --muted: #a99bbd;
+    --line: rgba(179, 136, 255, 0.28);
+    --crimson: #ff3154;
+    --crimson-deep: #c10f32;
+    --violet: #8b6cff;
+    --violet-deep: #3a246e;
+    --glow: rgba(139, 108, 255, 0.55);
+    --eye: #8fd7ff;
+    --ok: #8fd7ff;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--paper);
+    font-family: Manrope, Arial, Helvetica, sans-serif;
+    min-height: 100vh;
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+  button, input { font-family: inherit; }
+  h1, h2, .clock, .blind strong, .stack-line b, .kicker, .phase, .primary, .auth, .controls button {
+    font-family: Unbounded, Manrope, sans-serif;
+  }
+  button, .primary, .ghost {
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    min-height: 44px;
+  }
+  .veil {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse at 50% 46%, rgba(120, 70, 230, 0.48), transparent 42%),
+      radial-gradient(ellipse at 100% 0%, rgba(193, 15, 50, 0.22), transparent 28%),
+      linear-gradient(180deg, #100818 0%, #07060b 42%, #07060b 100%);
+    overflow: hidden;
+  }
+  .veil::before {
+    content: "";
+    position: absolute;
+    inset: -20%;
+    background:
+      repeating-linear-gradient(115deg, transparent 0 46px, rgba(179, 136, 255, 0.05) 46px 47px);
+    mask-image: radial-gradient(ellipse at 50% 45%, #000 20%, transparent 70%);
+  }
+  .seal {
+    position: absolute;
+    left: 50%;
+    top: 46%;
+    width: min(86vw, 680px);
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+  }
+  .seal-ring, .seal-spin {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(179, 136, 255, 0.45);
+    box-shadow: 0 0 70px rgba(109, 74, 255, 0.28), inset 0 0 50px rgba(109, 74, 255, 0.12);
+  }
+  .seal-ring::before, .seal-ring::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 49, 84, 0.55);
+  }
+  .seal-ring::before { inset: 11%; }
+  .seal-ring::after { inset: 27%; border-color: rgba(143, 215, 255, 0.45); }
+  .seal-spin {
+    inset: -4%;
+    border-style: dashed;
+    border-color: rgba(179, 136, 255, 0.4);
+    box-shadow: none;
+    animation: spin 56s linear infinite;
+  }
+  .seal-cross::before, .seal-cross::after {
+    content: "";
+    position: absolute;
+    background: rgba(179, 136, 255, 0.28);
+  }
+  .seal-cross::before { left: 50%; top: 6%; bottom: 6%; width: 1px; }
+  .seal-cross::after { top: 50%; left: 6%; right: 6%; height: 1px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) {
+    .seal-spin { animation: none; }
+  }
+  main, .controls { position: relative; z-index: 1; }
+  .top {
+    position: relative;
+    z-index: 50;
+    background: rgba(7, 6, 11, 0.88);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 16px;
+    padding: max(14px, env(safe-area-inset-top)) 28px 16px;
+  }
+  .top::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--violet) 0 68%, var(--crimson) 68% 100%);
+  }
+  .kicker {
+    color: var(--violet);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+  }
+  h1 {
+    margin: 6px 0 0;
+    font-size: clamp(20px, 3vw, 32px);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+  .phase {
+    text-align: right;
+    font-weight: 700;
+    font-size: clamp(13px, 1.8vw, 18px);
+    letter-spacing: 0.04em;
+  }
+  .phase small {
+    display: block;
+    color: var(--muted);
+    font-family: Manrope, Arial, sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 0;
+    margin-top: 4px;
+  }
+  .phase.open { color: var(--eye); }
+  .phase.closed { color: var(--crimson); }
+  main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 24px 8px;
+    min-height: 0;
+  }
+  .clock {
+    font-variant-numeric: tabular-nums;
+    font-weight: 800;
+    font-size: clamp(76px, 18vw, 220px);
+    line-height: 0.9;
+    letter-spacing: -0.05em;
+    text-shadow: 0 0 28px var(--glow);
+  }
+  .clock.warn {
+    color: #ffd0d8;
+    text-shadow: 0 0 28px rgba(255, 49, 84, 0.85);
+  }
+  .paused-flag {
+    height: 28px;
+    margin-top: 6px;
+    color: var(--crimson);
+    font-family: Unbounded, Manrope, sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    font-size: 16px;
+  }
+  .blinds {
+    display: grid;
+    grid-template-columns: 1fr 1.15fr 1fr;
+    gap: 14px;
+    width: min(980px, 100%);
+    margin-top: 18px;
+  }
+  .blind {
+    background: linear-gradient(180deg, rgba(28, 18, 48, 0.92), rgba(8, 7, 14, 0.94));
+    border: 1px solid rgba(179, 136, 255, 0.35);
+    border-top: 2px solid var(--violet);
+    padding: 14px 12px 16px;
+    text-align: center;
+    clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%);
+  }
+  .blind.ante { border-top-color: var(--crimson); }
+  .blind span {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    font-weight: 800;
+  }
+  .blind strong {
+    display: block;
+    margin-top: 6px;
+    font-size: clamp(30px, 4.6vw, 60px);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.04em;
+  }
+  .blind.ante strong { color: var(--crimson); text-shadow: 0 0 16px rgba(255, 49, 84, 0.35); }
+  .next {
+    margin-top: 16px;
+    color: var(--muted);
+    font-size: clamp(16px, 2vw, 22px);
+  }
+  .stack-line {
+    margin-top: 18px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+  }
+  .stack-line b {
+    display: block;
+    margin-top: 4px;
+    color: var(--paper);
+    font-size: clamp(30px, 4.6vw, 52px);
+    letter-spacing: -0.04em;
+    text-shadow: 0 0 18px rgba(143, 215, 255, 0.25);
+  }
+  .fields .wide { grid-column: 1 / -1; }
+  .next b { color: var(--paper); font-weight: 700; }
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    padding: 14px 22px max(18px, env(safe-area-inset-bottom));
+    border-top: 1px solid rgba(179, 136, 255, 0.22);
+    background: rgba(7, 6, 11, 0.9);
+  }
+  .controls button, .ghost, .primary, .auth, .cols button, .stepper button {
+    border: 1px solid rgba(179, 136, 255, 0.45);
+    background: rgba(12, 8, 22, 0.9);
+    color: var(--paper);
+    border-radius: 0;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 700;
+    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+  }
+  .controls button:hover, .ghost:hover, .primary:hover, .auth:hover { border-color: var(--paper); }
+  #pauseBtn {
+    background: var(--paper);
+    color: #140818;
+    border-color: var(--paper);
+    min-width: 180px;
+    font-size: 16px;
+  }
+  #pauseBtn.is-paused {
+    background: var(--crimson-deep);
+    border-color: var(--crimson-deep);
+    color: white;
+  }
+  .rebuy-count {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .rebuy-count b {
+    color: var(--paper);
+    font-size: 20px;
+    min-width: 1.4em;
+    text-align: center;
+    font-family: Unbounded, Manrope, sans-serif;
+  }
+  .rebuy-count button {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    font-size: 22px;
+  }
+  .screen {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 100%;
+    height: 100dvh;
+    background: rgba(7, 6, 11, 0.94);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    z-index: 20;
+  }
+  #breakScreen { z-index: 30; }
+  .screen[hidden] {
+    display: none !important;
+    pointer-events: none;
+  }
+  .panel {
+    position: relative;
+    width: min(760px, 100%);
+    background:
+      linear-gradient(180deg, rgba(32, 18, 52, 0.96), rgba(10, 8, 16, 0.98));
+    border: 1px solid rgba(179, 136, 255, 0.35);
+    border-top: 3px solid var(--crimson);
+    padding: 28px 28px 24px;
+    margin: auto;
+    clip-path: polygon(0 0, calc(100% - 28px) 0, 100% 28px, 100% 100%, 0 100%);
+    box-shadow: 0 0 40px rgba(109, 74, 255, 0.18);
+  }
+  .panel h2 { margin: 0 0 8px; font-size: 30px; letter-spacing: -0.03em; }
+  #breakClock { font-size: clamp(64px, 12vw, 120px); margin: 4px 0 8px; }
+  .panel p { margin: 0 0 18px; color: var(--muted); line-height: 1.45; }
+  .start-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 24px;
+    margin: 0 0 22px;
+    padding: 0;
+    list-style: none;
+    color: var(--paper);
+  }
+  .start-list li { padding: 6px 0; border-bottom: 1px solid rgba(179, 136, 255, 0.22); }
+  .primary {
+    background: var(--crimson-deep);
+    border-color: var(--crimson-deep);
+    color: white;
+    padding: 14px 22px;
+    font-size: 16px;
+  }
+  .fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .stepper {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 6px;
+  }
+  .stepper input[type="number"] { margin-top: 0; text-align: center; }
+  .stepper button {
+    width: 48px;
+    flex: 0 0 48px;
+    padding: 0;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .stepper button.plus {
+    background: var(--crimson-deep);
+    border-color: var(--crimson-deep);
+    color: white;
+  }
+  label { display: block; color: var(--muted); font-size: 13px; font-weight: 700; }
+  input[type="number"], input[type="text"], input[type="password"] {
+    width: 100%;
+    margin-top: 6px;
+    background: #0b0712;
+    color: var(--paper);
+    border: 1px solid rgba(179, 136, 255, 0.4);
+    border-radius: 0;
+    padding: 10px 12px;
+    font-size: 20px;
+    font-weight: 700;
+  }
+  input[type="text"], input[type="password"] { font-size: 18px; padding: 12px; }
+  .avg { margin: 4px 0 14px; font-size: 18px; }
+  .avg b { color: var(--eye); }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .cols button { text-align: left; }
+  .cols button small { display: block; color: var(--muted); font-weight: 500; margin-top: 3px; font-family: Manrope, Arial, sans-serif; }
+  .cols button.suggested {
+    border-color: var(--eye);
+    box-shadow: inset 3px 0 0 var(--eye);
+  }
+  .cols button.picked {
+    background: var(--crimson-deep);
+    border-color: var(--crimson-deep);
+    color: white;
+  }
+  .cols button.picked small { color: #ffd5dc; }
+  .check {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 16px;
+    font-weight: 500;
+    color: var(--paper);
+  }
+  .break-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .auth {
+    padding: 8px 12px;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+  .login-error { color: var(--crimson); min-height: 1.2em; font-weight: 700; }
+  .controls[hidden], .admin-only[hidden] { display: none !important; }
+  .head-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; }
+  #loginScreen { z-index: 40; }
+  @media (max-width: 900px) {
+    .blinds { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .blind.ante { grid-column: 1 / -1; }
+    .blind strong { font-size: clamp(28px, 8vw, 48px); }
+    .clock { font-size: clamp(68px, 22vw, 150px); }
+    .rebuy-count { margin-left: 0; width: 100%; justify-content: flex-end; }
+    .fields, .cols, .start-list { grid-template-columns: 1fr; }
+    .top {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+      padding: max(12px, env(safe-area-inset-top)) 16px 14px;
+    }
+    .phase { text-align: left; }
+    .head-actions { justify-content: flex-start; }
+    .controls button { flex: 1 1 calc(50% - 10px); }
+    #pauseBtn { flex: 1 1 100%; }
+    .panel { padding: 22px 16px 18px; }
+    .panel h2 { font-size: 26px; }
+    .seal { width: min(120vw, 520px); top: 42%; }
+  }
+</style>
+</head>
+<body>
+  <div class="veil" aria-hidden="true">
+    <div class="seal">
+      <div class="seal-spin"></div>
+      <div class="seal-ring"></div>
+      <div class="seal-cross"></div>
+    </div>
+  </div>
+  <header class="top">
+    <div>
+      <div class="kicker" id="tableKicker">ХОЛДЕМ</div>
+      <h1 id="levelTitle">Уровень 1</h1>
+    </div>
+    <div>
+      <div class="phase" id="phase">
+        <span id="phaseText">ОЖИДАНИЕ</span>
+        <small id="elapsed">Турнир ещё не начат</small>
+      </div>
+      <div class="head-actions">
+        <button id="soundBtn" class="auth" type="button">Звук: вкл</button>
+        <button id="authBtn" class="auth" type="button">Ведущий</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="clock" id="clock">15:00</div>
+    <div class="paused-flag" id="pausedFlag"></div>
+    <div class="blinds">
+      <div class="blind"><span>МАЛЫЙ</span><strong id="sb">100</strong></div>
+      <div class="blind"><span>БОЛЬШОЙ</span><strong id="bb">200</strong></div>
+      <div class="blind ante"><span>АНТЕ</span><strong id="ante">—</strong></div>
+    </div>
+    <div class="next" id="nextLine">Дальше <b>уровень 2</b> · 200 / 400</div>
+    <div class="stack-line">СРЕДНИЙ СТЕК<b id="avgMain">—</b></div>
+  </main>
+
+  <footer class="controls" id="controls" hidden>
+    <button id="pauseBtn" type="button">Пауза</button>
+    <button id="prevBtn" type="button">Предыдущий</button>
+    <button id="nextBtn" type="button">Следующий</button>
+    <button id="resetBtn" type="button">Сброс</button>
+    <div class="rebuy-count" id="rebuyBox">
+      <span>Ребаев</span>
+      <button id="rebuyMinus" type="button" aria-label="Меньше ребаев">−</button>
+      <b id="rebuyNum">0</b>
+      <button id="rebuyPlus" type="button" aria-label="Ребай">+</button>
+    </div>
+  </footer>
+
+  <section class="screen" id="startScreen">
+    <div class="panel">
+      <div class="kicker">РАСШИРЕНИЕ ТЕРРИТОРИИ</div>
+      <h2>Техасский холдем</h2>
+      <p>Уровень 15 минут. Ребай без лимита до конца 8-го уровня, аддон на десятиминутном перерыве, дальше игра на вылет.</p>
+      <ul class="start-list">
+        <li>Старт — 30 000 фишек, блайнды 100 / 200</li>
+        <li>Ребай — 30 000, пока стек не больше 30 000</li>
+        <li>Аддон — 40 000 один раз, в 2:00</li>
+        <li>У игроков только просмотр. Старт и пауза у ведущего</li>
+      </ul>
+      <p id="viewerNote">Часы запустит ведущий. На этом экране видно текущий уровень, блайнды и средний стек.</p>
+      <label id="playersField" hidden>Игроков за столом
+        <input id="playersInput" type="number" min="2" max="18" step="1" inputmode="numeric" placeholder="8">
+      </label>
+      <p class="login-error" id="playersError"></p>
+      <button class="primary" id="startBtn" type="button" hidden>Начать турнир</button>
+    </div>
+  </section>
+
+  <section class="screen" id="breakScreen" hidden>
+    <div class="panel">
+      <div class="kicker">ПЕРЕРЫВ</div>
+      <div class="clock" id="breakClock">10:00</div>
+      <h2>Аддон</h2>
+      <p id="breakText">Ребаи закрыты. Идёт десятиминутный перерыв.</p>
+      <div class="admin-only" id="breakAdmin">
+        <div class="fields">
+          <label class="wide">Ребаев
+            <span class="stepper">
+              <button id="breakRebuyMinus" type="button" aria-label="Меньше ребаев">−</button>
+              <input id="rebuyInput" type="number" min="0" step="1" value="0">
+              <button id="breakRebuyPlus" class="plus" type="button" aria-label="Добавить ребай">+</button>
+            </span>
+          </label>
+          <label>Игроков осталось
+            <input id="aliveInput" type="number" min="2" max="18" step="1" value="8">
+          </label>
+          <label class="wide">Взяли аддон
+            <input id="addonInput" type="number" min="0" max="18" step="1" value="0">
+          </label>
+        </div>
+        <div class="avg" id="avgOut">Средний стек <b>—</b></div>
+        <div class="cols" id="colButtons"></div>
+        <label class="check">
+          <input id="skipFirst" type="checkbox">
+          Средний стек выше 200 000 — начать вылет с уровня 10
+        </label>
+        <div class="break-actions">
+          <button class="primary" id="startFreeze" type="button">Начать вылет</button>
+          <button class="ghost" id="breakPause" type="button">Пауза</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen" id="loginScreen" hidden>
+    <div class="panel">
+      <div class="kicker">ВЕДУЩИЙ</div>
+      <h2>Вход</h2>
+      <p>Игрокам вход не нужен. После входа на этом телефоне появятся старт, пауза и смена уровня.</p>
+      <form id="loginForm">
+        <div class="fields">
+          <label>Логин
+            <input id="loginUser" type="text" autocomplete="username" inputmode="text">
+          </label>
+          <label>Пароль
+            <input id="loginPass" type="password" autocomplete="current-password">
+          </label>
+        </div>
+        <p class="login-error" id="loginError"></p>
+        <div class="break-actions">
+          <button class="primary" type="submit">Войти</button>
+          <button class="ghost" id="loginCancel" type="button">Закрыть</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+<script>
+const LEVEL_MS = 15 * 60 * 1000;
+const BREAK_MS = 10 * 60 * 1000;
+const STORE = "https://mantledb.sh/v2/holdem-jjk-7f3a91c2/clock";
+const REBUY = [
+  [100, 200, 0],
+  [200, 400, 0],
+  [300, 600, 0],
+  [400, 800, 0],
+  [600, 1200, 0],
+  [800, 1600, 0],
+  [1000, 2000, 0],
+  [1500, 3000, 0],
+];
+const COLUMNS = [
+  { name: "до 80 000", hint: "0–2 ребая", blinds: [[1000,2000,2000],[1000,2000,2000],[1500,3000,3000],[2000,4000,4000],[3000,6000,6000],[5000,10000,10000],[8000,16000,16000],[12000,24000,24000]] },
+  { name: "80–115 000", hint: "3–12 ребаев", blinds: [[1000,3000,3000],[1500,3000,3000],[2000,4000,4000],[3000,6000,6000],[4000,8000,8000],[6000,12000,12000],[10000,20000,20000],[16000,30000,30000]] },
+  { name: "115–150 000", hint: "13–21 ребай", blinds: [[2000,4000,4000],[2500,5000,5000],[3000,6000,6000],[4000,8000,8000],[6000,12000,12000],[10000,20000,20000],[15000,30000,30000],[25000,50000,50000]] },
+  { name: "от 150 000", hint: "22 ребая и больше", blinds: [[2500,5000,5000],[2500,5000,5000],[4000,8000,8000],[5000,10000,10000],[8000,16000,16000],[12000,24000,24000],[20000,40000,40000],[30000,60000,60000]] },
+];
+
+const $ = (id) => document.getElementById(id);
+let snapshot = null;
+let colSig = "";
+let offset = 0;
+let admin = sessionStorage.getItem("poker-host-jjk") === "1";
+let pendingSave = null;
+let soundOn = true;
+let audioCtx = null;
+let lastMark = "";
+let seen = false;
+let warned = false;
+
+function money(n) {
+  return Number(n).toLocaleString("ru-RU");
+}
+function fmt(ms) {
+  const s = Math.max(0, Math.ceil(ms / 1000));
+  return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+}
+function fmtElapsed(ms) {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const r = s % 60;
+  if (h) return h + ":" + String(m).padStart(2, "0") + ":" + String(r).padStart(2, "0");
+  return m + ":" + String(r).padStart(2, "0");
+}
+function bump(bb) {
+  const raw = bb * 1.5;
+  const step = bb >= 20000 ? 5000 : bb >= 8000 ? 1000 : bb >= 2000 ? 500 : 100;
+  const nextBb = Math.max(bb + step, Math.round(raw / step) * step);
+  return [nextBb / 2, nextBb, nextBb];
+}
+function rowAt(index, column) {
+  const blinds = COLUMNS[column].blinds;
+  if (index < blinds.length) return blinds[index];
+  let row = blinds[blinds.length - 1];
+  for (let i = blinds.length; i <= index; i++) row = bump(row[1]);
+  return row;
+}
+function nextInfo(st) {
+  if (st.phase === "rebuy") {
+    if (st.rebuyIndex < 7) {
+      const row = REBUY[st.rebuyIndex + 1];
+      return "Дальше <b>уровень " + (st.rebuyIndex + 2) + "</b> · " + money(row[0]) + " / " + money(row[1]);
+    }
+    return "Дальше <b>перерыв 10:00</b> · аддон";
+  }
+  if (st.phase === "break") {
+    const idx = st.skipFirst ? 1 : 0;
+    const row = rowAt(idx, st.column);
+    return "Дальше <b>уровень " + (9 + idx) + "</b> · " + money(row[0]) + " / " + money(row[1]);
+  }
+  const row = rowAt(st.freezeIndex + 1, st.column);
+  return "Дальше <b>уровень " + (10 + st.freezeIndex) + "</b> · " + money(row[0]) + " / " + money(row[1]);
+}
+function stackMath(st) {
+  const players = Math.max(0, Number(st.players) || 0);
+  const rebuys = Math.max(0, Number(st.rebuys) || 0);
+  const addons = Math.max(0, Number(st.addons) || 0);
+  let alive = Number(st.alive);
+  if (!alive || alive < 1) alive = players;
+  if (players) alive = Math.max(1, Math.min(players, alive));
+  const addonOn = st.phase === "break" || st.phase === "freeze";
+  const total = players * 30000 + rebuys * 30000 + (addonOn ? addons * 40000 : 0);
+  const avg = players && alive ? Math.round(total / alive) : null;
+  return { players: players, alive: alive, addons: addons, avg: avg };
+}
+function suggestView(copy) {
+  if (copy.columnTouched) {
+    fillDerived(copy);
+    return;
+  }
+  fillDerived(copy);
+  if (copy.avg == null) return;
+  copy.column = copy.suggested;
+  copy.skipFirst = copy.avg > 200000;
+}
+function startView(copy, duration, now) {
+  if (copy.running && copy.runSince) copy.elapsed = (copy.elapsed || 0) + now - copy.runSince;
+  copy.remaining = duration;
+  copy.endsAt = now + duration;
+  copy.running = true;
+  copy.runSince = now;
+}
+function advanceView(copy, now) {
+  if (copy.phase === "rebuy") {
+    if (copy.rebuyIndex < 7) {
+      copy.rebuyIndex += 1;
+      startView(copy, LEVEL_MS, now);
+    } else {
+      copy.phase = "break";
+      copy.columnTouched = false;
+      suggestView(copy);
+      startView(copy, BREAK_MS, now);
+    }
+    return;
+  }
+  if (copy.phase === "break") {
+    suggestView(copy);
+    copy.phase = "freeze";
+    copy.freezeIndex = copy.skipFirst ? 1 : 0;
+    startView(copy, LEVEL_MS, now);
+    return;
+  }
+  if (copy.phase === "freeze") {
+    copy.freezeIndex += 1;
+    startView(copy, LEVEL_MS, now);
+  }
+}
+function displayState() {
+  if (!snapshot) return null;
+  if (!snapshot.running) return snapshot;
+  const copy = Object.assign({}, snapshot);
+  let guard = 0;
+  let now = Date.now();
+  while (copy.running && now >= copy.endsAt && guard++ < 24) {
+    advanceView(copy, now);
+    now = Date.now();
+  }
+  return copy;
+}
+function serverNow() { return Date.now() + offset; }
+function leftMs(st) {
+  if (!st || st.phase === "idle") return LEVEL_MS;
+  if (st.running) return Math.max(0, st.endsAt - serverNow());
+  return st.remaining;
+}
+function playedMs(st) {
+  if (!st || st.phase === "idle") return 0;
+  let elapsed = st.elapsed || 0;
+  if (st.running && st.runSince) elapsed += serverNow() - st.runSince;
+  return Math.max(0, elapsed);
+}
+function unlockAudio() {
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  if (!Ctx) return;
+  if (!audioCtx) audioCtx = new Ctx();
+  if (audioCtx.state === "suspended") audioCtx.resume();
+}
+function chime(freq, dur) {
+  if (!soundOn || !audioCtx) return;
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = "sine";
+  o.frequency.value = freq;
+  o.connect(g);
+  g.connect(audioCtx.destination);
+  const t = audioCtx.currentTime;
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(0.15, t + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.start(t);
+  o.stop(t + dur + 0.02);
+}
+function levelChime() {
+  unlockAudio();
+  chime(660, 0.12);
+  setTimeout(() => chime(880, 0.18), 140);
+}
+
+function freshState() {
+  return {
+    phase: "idle",
+    running: false,
+    endsAt: 0,
+    remaining: LEVEL_MS,
+    rebuyIndex: 0,
+    freezeIndex: 0,
+    column: 1,
+    columnTouched: false,
+    rebuys: 0,
+    players: 0,
+    alive: 0,
+    addons: 0,
+    skipFirst: false,
+    elapsed: 0,
+    runSince: 0,
+    rev: 0,
+  };
+}
+function fillDerived(st) {
+  const math = stackMath(st);
+  st.avg = math.avg;
+  st.suggested = math.avg == null ? 1 : math.avg <= 80000 ? 0 : math.avg <= 115000 ? 1 : math.avg <= 150000 ? 2 : 3;
+}
+function beginFreeze(st, now) {
+  suggestView(st);
+  st.phase = "freeze";
+  st.freezeIndex = st.skipFirst ? 1 : 0;
+  startView(st, LEVEL_MS, now);
+}
+function applyAction(st, kind, data) {
+  const now = Date.now();
+  if (kind === "start" && st.phase === "idle") {
+    const players = Math.max(0, Math.min(18, Number(data.players) || 0));
+    if (players < 2) return false;
+    st.players = players;
+    st.alive = players;
+    st.addons = 0;
+    st.phase = "rebuy";
+    st.rebuyIndex = 0;
+    st.elapsed = 0;
+    startView(st, LEVEL_MS, now);
+    return true;
+  }
+  if (kind === "pause") {
+    if (!st.running) return false;
+    st.remaining = Math.max(0, st.endsAt - now);
+    st.elapsed = (st.elapsed || 0) + now - (st.runSince || now);
+    st.running = false;
+    st.runSince = 0;
+    return true;
+  }
+  if (kind === "resume") {
+    if (st.phase === "idle" || st.running) return false;
+    startView(st, Math.max(0, Number(st.remaining) || 0), now);
+    return true;
+  }
+  if (kind === "next") {
+    if (st.phase === "idle") return false;
+    if (st.phase === "break") {
+      beginFreeze(st, now);
+      return true;
+    }
+    if (st.phase === "rebuy" && st.rebuyIndex >= 7) {
+      st.phase = "break";
+      st.columnTouched = false;
+      suggestView(st);
+      startView(st, BREAK_MS, now);
+      return true;
+    }
+    if (st.phase === "rebuy") st.rebuyIndex += 1;
+    else st.freezeIndex += 1;
+    startView(st, LEVEL_MS, now);
+    return true;
+  }
+  if (kind === "prev") {
+    if (st.phase === "rebuy" && st.rebuyIndex === 0) return false;
+    if (st.phase === "rebuy") {
+      st.rebuyIndex -= 1;
+      startView(st, LEVEL_MS, now);
+      return true;
+    }
+    if (st.phase === "break") {
+      st.phase = "rebuy";
+      st.rebuyIndex = 7;
+      startView(st, LEVEL_MS, now);
+      return true;
+    }
+    if (st.freezeIndex === 0) {
+      st.phase = "break";
+      st.columnTouched = false;
+      suggestView(st);
+      startView(st, BREAK_MS, now);
+      return true;
+    }
+    st.freezeIndex -= 1;
+    startView(st, LEVEL_MS, now);
+    return true;
+  }
+  if (kind === "reset") {
+    const rev = st.rev;
+    Object.assign(st, freshState());
+    st.rev = rev;
+    return true;
+  }
+  if (kind === "rebuy") {
+    st.rebuys = Math.max(0, Number(st.rebuys) + Number(data.delta || 1));
+    if (st.phase === "break") suggestView(st);
+    return true;
+  }
+  if (kind === "alive") {
+    const players = Math.max(2, Number(st.players) || 18);
+    st.alive = Math.max(2, Math.min(players, Number(data.alive) || players));
+    if (Number(st.addons) > st.alive) st.addons = st.alive;
+    if (st.phase === "break") suggestView(st);
+    return true;
+  }
+  if (kind === "addons") {
+    const cap = Math.max(0, Number(st.alive) || Number(st.players) || 0);
+    st.addons = Math.max(0, Math.min(cap, Number(data.addons) || 0));
+    if (st.phase === "break" || st.phase === "freeze") suggestView(st);
+    return true;
+  }
+  if (kind === "column") {
+    st.column = Math.max(0, Math.min(3, Number(data.column)));
+    st.columnTouched = true;
+    return true;
+  }
+  if (kind === "skip") {
+    st.skipFirst = !!data.skip;
+    st.columnTouched = true;
+    return true;
+  }
+  if (kind === "startFreeze" && st.phase === "break") {
+    beginFreeze(st, now);
+    return true;
+  }
+  return false;
+}
+async function saveState(st) {
+  pendingSave = st;
+  const res = await fetch(STORE, {
+    method: "POST",
+    cache: "no-store",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(st),
+  });
+  if (res.ok && pendingSave === st) pendingSave = null;
+}
+async function pull() {
+  if (pendingSave) {
+    await saveState(pendingSave);
+    return;
+  }
+  const res = await fetch(STORE, { cache: "no-store" });
+  if (!res.ok) return;
+  const data = await res.json();
+  if (!data || !data.phase) return;
+  if (snapshot && Number(data.rev || 0) < Number(snapshot.rev || 0)) return;
+  fillDerived(data);
+  snapshot = data;
+  paint();
+}
+async function act(type, extra) {
+  if (!admin) return;
+  const shown = displayState();
+  const next = Object.assign({}, shown || freshState());
+  if (!applyAction(next, type, extra || {})) return;
+  next.rev = Number(next.rev || 0) + 1;
+  fillDerived(next);
+  snapshot = next;
+  paint();
+  await saveState(next);
+}
+function paintColumns(st) {
+  const sig = st.column + ":" + st.suggested;
+  const box = $("colButtons");
+  if (sig === colSig && box.children.length) return;
+  colSig = sig;
+  box.innerHTML = "";
+  COLUMNS.forEach((col, i) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.innerHTML = col.name + "<small>" + col.hint + "</small>";
+    if (i === st.suggested) btn.classList.add("suggested");
+    if (i === st.column) btn.classList.add("picked");
+    btn.addEventListener("click", () => act("column", { column: i }));
+    box.appendChild(btn);
+  });
+}
+function paint() {
+  $("authBtn").textContent = admin ? "Выйти" : "Ведущий";
+  $("startBtn").hidden = !admin;
+  $("viewerNote").hidden = admin;
+  const st = displayState();
+  if (!st) return;
+  const mark = [st.phase, st.rebuyIndex, st.freezeIndex].join(":");
+  if (seen && mark !== lastMark && st.phase !== "idle") levelChime();
+  if (mark !== lastMark) warned = false;
+  lastMark = mark;
+  seen = true;
+  const idle = st.phase === "idle";
+  const onBreak = st.phase === "break";
+  const left = leftMs(st);
+  $("startScreen").hidden = !idle || !$("loginScreen").hidden;
+  $("breakScreen").hidden = !onBreak;
+  $("playersField").hidden = !admin || !idle;
+  $("controls").hidden = !admin || idle || onBreak;
+  $("breakAdmin").hidden = !admin;
+  $("breakText").textContent = admin
+    ? "Укажите, сколько игроков ещё в игре и сколько взяли аддон. Если кто-то берёт ребай вместе с аддоном, добавьте его кнопкой +. Вылет начнётся по таймеру или сразу по кнопке."
+    : "Идёт перерыв на аддон. Вылет начнёт ведущий.";
+  $("clock").textContent = fmt(left);
+  $("clock").classList.toggle("warn", !idle && !onBreak && left <= 60000);
+  $("breakClock").textContent = fmt(left);
+  $("pausedFlag").textContent = !idle && !onBreak && !st.running ? "ПАУЗА" : "";
+  $("pauseBtn").textContent = st.running ? "Пауза" : "Продолжить";
+  $("pauseBtn").classList.toggle("is-paused", !idle && !st.running);
+  if ($("breakPause")) {
+    $("breakPause").textContent = st.running ? "Пауза" : "Продолжить";
+  }
+  $("elapsed").textContent = idle ? "Турнир ещё не начат" : "В игре " + fmtElapsed(playedMs(st));
+  $("tableKicker").textContent = st.players ? "ХОЛДЕМ · " + st.players + " ИГРОКОВ" : "ХОЛДЕМ";
+  $("avgMain").textContent = st.avg == null ? "—" : money(st.avg);
+  $("rebuyNum").textContent = String(st.rebuys);
+  if (document.activeElement !== $("rebuyInput")) $("rebuyInput").value = st.rebuys;
+  if (document.activeElement !== $("aliveInput")) $("aliveInput").value = st.alive || st.players || "";
+  if (document.activeElement !== $("addonInput")) $("addonInput").value = st.addons || 0;
+  $("aliveInput").max = String(st.players || 18);
+  $("addonInput").max = String(st.alive || st.players || 18);
+  $("avgOut").innerHTML = "Средний стек <b>" + (st.avg == null ? "—" : money(st.avg)) + "</b>";
+  if (document.activeElement !== $("skipFirst")) $("skipFirst").checked = !!st.skipFirst;
+
+  const phase = $("phase");
+  if (idle) {
+    phase.className = "phase";
+    $("phaseText").textContent = admin ? "ГОТОВО К СТАРТУ" : "ОЖИДАНИЕ";
+    $("levelTitle").textContent = "Уровень 1";
+    $("sb").textContent = "100";
+    $("bb").textContent = "200";
+    $("ante").textContent = "—";
+    $("nextLine").innerHTML = "Дальше <b>уровень 2</b> · 200 / 400";
+  } else if (st.phase === "rebuy") {
+    phase.className = "phase open";
+    $("phaseText").textContent = "РЕБАЙ ОТКРЫТ";
+    const row = REBUY[st.rebuyIndex];
+    $("levelTitle").textContent = "Уровень " + (st.rebuyIndex + 1);
+    $("sb").textContent = money(row[0]);
+    $("bb").textContent = money(row[1]);
+    $("ante").textContent = "—";
+    $("nextLine").innerHTML = nextInfo(st);
+  } else if (onBreak) {
+    phase.className = "phase";
+    $("phaseText").textContent = "ПЕРЕРЫВ · АДДОН";
+    $("levelTitle").textContent = "Перерыв";
+    $("sb").textContent = money(REBUY[7][0]);
+    $("bb").textContent = money(REBUY[7][1]);
+    $("ante").textContent = "—";
+    $("nextLine").innerHTML = nextInfo(st);
+    paintColumns(st);
+  } else {
+    phase.className = "phase closed";
+    const col = COLUMNS[st.column] || COLUMNS[1];
+    $("phaseText").textContent = "ИГРА НА ВЫЛЕТ · " + col.name;
+    const row = rowAt(st.freezeIndex, st.column);
+    $("levelTitle").textContent = "Уровень " + (9 + st.freezeIndex);
+    $("sb").textContent = money(row[0]);
+    $("bb").textContent = money(row[1]);
+    $("ante").textContent = money(row[2]);
+    $("nextLine").innerHTML = nextInfo(st);
+  }
+  if (!idle && !onBreak && st.running && left <= 10000 && !warned) {
+    warned = true;
+    chime(520, 0.08);
+  }
+}
+
+let startLock = 0;
+function onStart(event) {
+  const now = Date.now();
+  if (now - startLock < 700) return;
+  startLock = now;
+  if (event) event.preventDefault();
+  const players = Number($("playersInput").value);
+  if (!players || players < 2) {
+    $("playersError").textContent = "Укажите, сколько игроков за столом";
+    $("playersInput").focus();
+    return;
+  }
+  $("playersError").textContent = "";
+  unlockAudio();
+  act("start", { players: players });
+}
+$("startBtn").addEventListener("pointerup", onStart);
+$("startBtn").addEventListener("click", onStart);
+$("pauseBtn").addEventListener("click", () => { unlockAudio(); act(snapshot && snapshot.running ? "pause" : "resume"); });
+$("breakPause").addEventListener("click", () => { unlockAudio(); act(snapshot && snapshot.running ? "pause" : "resume"); });
+$("prevBtn").addEventListener("click", () => act("prev"));
+$("nextBtn").addEventListener("click", () => act("next"));
+$("resetBtn").addEventListener("click", () => {
+  if (confirm("Сбросить турнир и вернуть часы на уровень 1?")) act("reset");
+});
+$("rebuyPlus").addEventListener("click", () => act("rebuy", { delta: 1 }));
+$("rebuyMinus").addEventListener("click", () => act("rebuy", { delta: -1 }));
+$("breakRebuyPlus").addEventListener("click", () => act("rebuy", { delta: 1 }));
+$("breakRebuyMinus").addEventListener("click", () => act("rebuy", { delta: -1 }));
+$("rebuyInput").addEventListener("change", () => {
+  if (!snapshot) return;
+  const next = Math.max(0, Number($("rebuyInput").value) || 0);
+  act("rebuy", { delta: next - snapshot.rebuys });
+});
+$("aliveInput").addEventListener("change", () => act("alive", { alive: Number($("aliveInput").value) || 2 }));
+$("addonInput").addEventListener("change", () => act("addons", { addons: Number($("addonInput").value) || 0 }));
+$("skipFirst").addEventListener("change", () => act("skip", { skip: $("skipFirst").checked }));
+$("startFreeze").addEventListener("click", () => { unlockAudio(); act("startFreeze"); });
+$("soundBtn").addEventListener("click", () => {
+  soundOn = !soundOn;
+  $("soundBtn").textContent = soundOn ? "Звук: вкл" : "Звук: выкл";
+  if (soundOn) { unlockAudio(); chime(880, 0.12); }
+});
+$("authBtn").addEventListener("click", () => {
+  if (admin) {
+    admin = false;
+    sessionStorage.removeItem("poker-host-jjk");
+    paint();
+    return;
+  }
+  $("loginError").textContent = "";
+  $("loginScreen").hidden = false;
+  $("startScreen").hidden = true;
+  $("loginUser").focus();
+});
+$("loginCancel").addEventListener("click", () => {
+  $("loginScreen").hidden = true;
+  paint();
+});
+$("loginForm").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const login = $("loginUser").value.trim();
+  const password = $("loginPass").value;
+  if (login !== "admin" || password !== "123123123") {
+    $("loginError").textContent = "Неверный логин или пароль";
+    return;
+  }
+  admin = true;
+  sessionStorage.setItem("poker-host-jjk", "1");
+  $("loginPass").value = "";
+  $("loginScreen").hidden = true;
+  unlockAudio();
+  paint();
+});
+document.addEventListener("keydown", (event) => {
+  if (!admin || event.target.matches("input, textarea")) return;
+  if (event.code === "Space") {
+    event.preventDefault();
+    unlockAudio();
+    act(snapshot && snapshot.running ? "pause" : "resume");
+  } else if (event.key === "ArrowRight") act("next");
+  else if (event.key === "ArrowLeft") act("prev");
+});
+
+setInterval(() => { if (snapshot) paint(); }, 200);
+setInterval(() => { pull().catch(() => {}); }, 15000);
+pull().catch(() => {});
+</script>
+</body>
+</html>
